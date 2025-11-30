@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pharos Meme Lab</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="index-page">
+  <header class="header-centered">
+    <div class="logo-left">
+      <img src="images/logo.jpg" alt="Pharos Logo" onerror="this.src='https://via.placeholder.com/50x50?text=P'">
+      <span>PHAROS</span>
+    </div>
+    
+      <h1 class="title-center">PHAROS MEME LAB</h1>
+    
+    <nav>
+      <a href="soon.html" class="neon-button">Soon</a>
+      <a href="https://discord.com/invite/pharos" target="_blank" class="join-btn gradient-animate">Community</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <h1>Create Your Meme!</h1>
+    <p>Choose a meme, add text, and share it with the world</p>
+    <div class="cta">⬇ Choose a template below ⬇</div>
+  </section>
+
+  <section class="gallery">
+    <h2>Choose Your Octopus</h2>
+    <div class="templates">
+      
+      <!-- UPLOAD YOUR PHOTO -->
+      <div class="upload-template" id="uploadBox">
+        <div class="upload-icon">📁</div>
+        <div class="upload-text">Upload<br>Your Photo</div>
+        <input type="file" id="uploadCustom" accept="image/*" style="display: none;">
+      </div>
+
+      <!-- TEMPLATES -->
+      <a href="editor.html?img=images/template1.jpg" class="template square">
+    <img src="images/template1.jpg" alt="Template 1">
+  </a>
+      <a href="editor.html?img=images/template2.jpg" class="template square">
+        <img src="images/template2.jpg" alt="Template 2">
+      </a>
+      <a href="editor.html?img=images/template3.jpg" class="template square">
+        <img src="images/template3.jpg" alt="Template 3">
+      </a>
+      <a href="editor.html?img=images/template4.jpg" class="template square">
+        <img src="images/template4.jpg" alt="Template 4">
+      </a>
+      <a href="editor.html?img=images/template6.png" class="template square">
+        <img src="images/template6.png" alt="Template 6">
+      </a>
+      <a href="editor.html?img=images/template8.png" class="template square">
+        <img src="images/template8.png" alt="Template 8">
+      </a>
+      <a href="editor.html?img=images/template9.jpg" class="template square">
+        <img src="images/template9.jpg" alt="Template 9">
+      </a>
+      <a href="editor.html?img=images/template10.jpg" class="template square">
+        <img src="images/template10.jpg" alt="Template 10">
+      </a>
+      <a href="editor.html?img=images/template11.jpg" class="template square">
+        <img src="images/template11.jpg" alt="Template 11">
+      </a>
+      <a href="editor.html?img=images/template12.png" class="template square">
+        <img src="images/template12.png" alt="Template 12">
+      </a>
+      <a href="editor.html?img=images/template13.jpg" class="template square">
+        <img src="images/template13.jpg" alt="Template 13">
+      </a>
+      <a href="editor.html?img=images/template14.jpg" class="template square">
+        <img src="images/template14.jpg" alt="Template 14">
+      </a>
+      <a href="editor.html?img=images/template15.jpg" class="template square">
+        <img src="images/template15.jpg" alt="Template 15">
+      </a>
+      <a href="editor.html?img=images/template16.jpg" class="template square">
+        <img src="images/template16.jpg" alt="Template 16">
+      </a>
+      <a href="editor.html?img=images/template17.jpg" class="template square">
+        <img src="images/template17.jpg" alt="Template 17">
+      </a>
+      <a href="editor.html?img=images/template5.jpg" class="template vertical">
+        <img src="images/template5.jpg" alt="Template 5">
+      </a>
+      <a href="editor.html?img=images/template7.jpg" class="template vertical">
+        <img src="images/template7.jpg" alt="Template 7">
+      </a>
+    </div>
+  </section>
+
+  <footer class="footer-enhanced">
+    <div class="footer-content">
+      <p class="footer-subtitle">Created by</p>
+      <div class="footer-links">
+  <a href="https://twitter.com/cryptoroman2324" target="_blank" class="twitter-tag purple">@cryptoroman2324</a>
+  <a href="https://twitter.com/amigo3343" target="_blank" class="twitter-tag blue">@amigo3343</a>
+  <a href="https://twitter.com/oooknorov" target="_blank" class="twitter-tag orange">@oooknorov</a>
+      </div>
+      <p class="footer-copyright">© 2025 Pharos Meme Lab</p>
+    </div>
+  </footer>
+
+  <script>
+    // UPLOAD PHOTO FUNCTIONALITY
+    const uploadBox = document.getElementById('uploadBox');
+    const uploadInput = document.getElementById('uploadCustom');
+    
+    uploadBox.addEventListener('click', () => {
+      uploadInput.click();
+    });
+    
+    uploadInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file && file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          localStorage.setItem('customImage', event.target.result);
+          window.location.href = 'editor.html?img=custom';
+        };
+        reader.readAsDataURL(file);
+      } else {
+        alert('Please select a valid image file!');
+      }
+    });
+  </script>
+</body>
+</html>

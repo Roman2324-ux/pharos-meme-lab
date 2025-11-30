@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pharos Meme Lab</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="editor-page">
+  
+  <header>
+    <div class="logo-left">
+      <img src="images/logo.jpg" alt="Pharos Logo" onerror="this.src='https://via.placeholder.com/50x50?text=P'">
+      <span>PHAROS</span>
+    </div>
+
+      <h1 class="title-center">PHAROS MEME LAB</h1>
+    
+    <nav>
+      <a href="index.html" class="back-btn">← Back to templates</a>
+      <a href="https://discord.com/invite/pharos" target="_blank" class="join-btn gradient-animate">Community</a>
+    </nav>
+  </header>
+
+  <div class="editor-container">
+    <!-- LEFT: Canvas -->
+    <div class="editor-left">
+      <canvas id="memeCanvas" width="600" height="600"></canvas>
+      
+      <div class="btn-group" style="margin-top: 1.5rem; width: 100%;">
+        <button class="btn btn-success btn-full" id="downloadBtn"> Download</button>
+        <button class="btn btn-primary btn-full" id="shareBtn"> Share on X</button>
+      </div>
+    </div>
+
+    <!-- RIGHT: Control Panel (оновлено з мобільною панеллю) -->
+    <!-- КНОПКА ВІДКРИТТЯ ПАНЕЛІ НА МОБІЛЦІ -->
+    <button id="mobileControlsToggle">Edit Text</button>
+
+    <!-- ПАНЕЛЬ РЕДАГУВАННЯ — висувна знизу на мобілці -->
+    <div class="editor-right-compact" id="mobileControls">
+      <!-- Заголовок панелі (видно тільки на мобілці) -->
+      <div class="mobile-controls-header">
+        <h3>Edit Text</h3>
+        <button id="closeMobileControls">×</button>
+      </div>
+      <!-- Text Elements -->
+      <div class="control-panel">
+        <h3>Texts</h3>
+        <button class="btn btn-primary btn-full" id="addTextBtn">Add Text</button>
+        <div id="textsList" style="max-height: 150px; overflow-y: auto; margin-top: 0.5rem;"></div>
+      </div>
+
+      <!-- Edit Text -->
+      <div class="control-panel-compact" id="editPanel" style="display: none;">
+        <h3>✏️ Edit Text</h3>
+
+        <!-- Text Input -->
+        <div class="control-group-compact">
+          <label>Text:</label>
+          <textarea id="textInput" rows="3" placeholder="Enter your text here..."></textarea>
+        </div>
+
+        <!-- Font & Size -->
+        <div class="control-row">
+          <div class="control-group-compact">
+            <label>Font:</label>
+            <select id="fontFamily">
+              <option value="Impact">Impact</option>
+              <option value="Arial">Arial</option>
+              <option value="Arial Black">Arial Black</option>
+              <option value="Comic Sans MS">Comic Sans</option>
+            </select>
+          </div>
+          <div class="control-group-compact">
+            <label>Size: <span id="fontSizeValue">40</span>px</label>
+            <input type="range" id="fontSize" min="10" max="150" value="40">
+          </div>
+        </div>
+
+        <!-- Text Color & Stroke Color -->
+        <div class="control-row">
+          <div class="control-group-compact">
+            <label>Text Color:</label>
+            <input type="color" id="textColor" value="#FFFFFF">
+          </div>
+          <div class="control-group-compact">
+            <label>Stroke Color:</label>
+            <input type="color" id="strokeColor" value="#000000">
+          </div>
+        </div>
+
+        <!-- Stroke Width & Background Color -->
+        <div class="control-row">
+          <div class="control-group-compact">
+            <label>Stroke Width: <span id="strokeWidthValue">3</span>px</label>
+            <input type="range" id="strokeWidth" min="0" max="20" value="3">
+          </div>
+          <div class="control-group-compact">
+            <label>Background Color:</label>
+            <input type="color" id="textBgColor" value="#000000">
+          </div>
+        </div>
+
+        <!-- Style Options (Bold, Italic, Shadow) -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; margin-top: 0.5rem;">
+          <div class="control-group-compact" style="margin-bottom: 0;">
+            <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0;">
+              <input type="checkbox" id="textBold" style="width: auto;">
+              <span>Bold</span>
+            </label>
+          </div>
+          <div class="control-group-compact" style="margin-bottom: 0;">
+            <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0;">
+              <input type="checkbox" id="textItalic" style="width: auto;">
+              <span>Italic</span>
+            </label>
+          </div>
+          <div class="control-group-compact" style="margin-bottom: 0;">
+            <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0;">
+              <input type="checkbox" id="textShadow" style="width: auto;">
+              <span>Shadow</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Enable Background -->
+        <div class="control-group-compact" style="margin-top: 0.75rem;">
+          <label style="display: flex; align-items: center; gap: 0.5rem;">
+            <input type="checkbox" id="textBgEnable" style="width: auto;">
+            <span>Enable Background</span>
+          </label>
+        </div>
+
+        <!-- Rotation -->
+        <div class="control-group-compact" style="margin-top: 0.75rem;">
+          <label>Rotation: <span id="rotationValue">0</span>°</label>
+          <input type="range" id="textRotation" min="-180" max="180" value="0">
+        </div>
+
+        <!-- Delete Button -->
+        <button class="btn btn-danger btn-full" id="deleteTextBtn" style="margin-top: 1rem;">🗑️ Delete Text</button>
+      </div>
+
+      <!-- Tips -->
+      <div class="control-panel-tips">
+        <h3>💡 Designer Tips</h3>
+        <ul>
+          <li>Position your text by dragging</li>
+          <li>Edit with a simple click</li>
+          <li>Choose Impact for a bold meme style</li>
+          <li>Apply an outline for visual contrast</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+  
+
+  <footer class="footer-enhanced">
+    <div class="footer-content">
+      <p class="footer-subtitle">Created by</p>
+      <div class="footer-links">
+        <a href="https://twitter.com/cryptoroman2324" target="_blank" class="twitter-tag purple">@cryptoroman2324</a>
+        <a href="https://twitter.com/amigo3343" target="_blank" class="twitter-tag blue">@amigo3343</a>
+        <a href="https://twitter.com/oooknorov" target="_blank" class="twitter-tag orange">@oooknorov</a>
+      </div>
+      <p class="footer-copyright">© 2025 Pharos Meme Lab</p>
+    </div>
+  </footer>
+
+  <div id="toast" class="toast-hidden"> Text deleted</div>
+  <script src="script.js"></script>
+</body>
+</html>
