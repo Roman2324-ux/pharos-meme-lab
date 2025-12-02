@@ -737,14 +737,17 @@ input[type="range"]::-ms-thumb {
   opacity: 0;
   transition: opacity 0.4s ease;
   z-index: 9999;
+  pointer-events: none;
 }
 
 .toast-show {
   opacity: 1;
+  pointer-events: auto;
 }
 
 .toast-hidden {
   opacity: 0;
+  pointer-events: none;
 }
 /* ========== NEON BUTTON (ONLY FOR "SOON") ========== */
 .neon-button {
@@ -1383,4 +1386,3 @@ input[type="range"]::-ms-thumb {
 .editor-right-compact.open {
   overscroll-behavior: contain;
 }
-

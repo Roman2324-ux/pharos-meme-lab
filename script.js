@@ -199,6 +199,9 @@ function syncControls(t) {
   document.getElementById('textBgEnable').checked = t.backgroundEnabled;
   document.getElementById('textRotation').value = t.rotation;
   document.getElementById('rotationValue').textContent = `${t.rotation}°`;
+
+  // Ensure range input track fills reflect the synced values
+  document.querySelectorAll('input[type="range"]').forEach(updateRangeBackground);
 }
 
 // EDIT CONTROLS LISTENERS
@@ -434,13 +437,19 @@ document.getElementById('shareBtn').addEventListener('click', () => {
 });
 
 // SLIDER GRADIENT UPDATE
+// Helper to update a range input's filled track
+function updateRangeBackground(slider) {
+  if (!slider) return;
+  const min = parseFloat(slider.min) || 0;
+  const max = parseFloat(slider.max) || 100;
+  const val = ((parseFloat(slider.value) - min) / (max - min)) * 100;
+  slider.style.background = `linear-gradient(90deg, #0007B6 ${val}%, #e5e7eb ${val}%)`;
+}
+
+// Initialize all range inputs and attach listeners
 document.querySelectorAll('input[type="range"]').forEach(slider => {
-  const updateSlider = () => {
-    const val = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
-    slider.style.background = `linear-gradient(90deg, #0007B6 ${val}%, #e5e7eb ${val}%)`;
-  };
-  updateSlider();
-  slider.addEventListener('input', updateSlider);
+  updateRangeBackground(slider);
+  slider.addEventListener('input', () => updateRangeBackground(slider));
 });
 
 // INITIAL CURSOR
