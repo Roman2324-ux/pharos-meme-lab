@@ -48,7 +48,7 @@ body {
 /* ========== BACKGROUND IMAGE ========== */
 body.index-page,
 body.editor-page {
-  background-image: url('images/background.webp');
+  background-image: url('images/background2.webp');
   background-size: cover;
   background-position: center;
   background-attachment: fixed;

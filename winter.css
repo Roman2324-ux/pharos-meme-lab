@@ -1,0 +1,368 @@
+/* ========== ЗИМОВА ТЕМА PHAROS MEME LAB ========== */
+
+/* ========== ПАДАЮЧИЙ СНІГ (CSS-only) ========== */
+@keyframes snowFall {
+  0% {
+    transform: translateY(-10vh) translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(110vh) translateX(100px);
+    opacity: 0;
+  }
+}
+
+@keyframes snowFallLeft {
+  0% {
+    transform: translateY(-10vh) translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(110vh) translateX(-80px);
+    opacity: 0;
+  }
+}
+
+/* Контейнер для снігу */
+.snow-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+/* Сніжинки */
+.snowflake {
+  position: absolute;
+  top: -10px;
+  color: white;
+  font-size: 1em;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+  animation: snowFall linear infinite;
+  user-select: none;
+}
+
+/* Варіації сніжинок */
+.snowflake:nth-child(odd) {
+  animation-name: snowFallLeft;
+}
+
+.snowflake:nth-child(3n) {
+  font-size: 0.8em;
+  animation-duration: 12s;
+}
+
+.snowflake:nth-child(4n) {
+  font-size: 1.2em;
+  animation-duration: 18s;
+}
+
+.snowflake:nth-child(5n) {
+  font-size: 0.6em;
+  animation-duration: 20s;
+}
+
+/* ========== ГІРЛЯНДИ ========== */
+@keyframes lightsGlow {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
+  }
+  50% {
+    opacity: 0.7;
+    box-shadow: 0 0 5px currentColor, 0 0 10px currentColor;
+  }
+}
+
+@keyframes lightsSwing {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(5px) rotate(2deg);
+  }
+}
+
+/* Контейнер для гірлянд */
+.christmas-lights {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 80px;
+  pointer-events: none;
+  z-index: 200;
+  overflow: hidden;
+}
+
+/* Мотузка гірлянди */
+.lights-wire {
+  position: absolute;
+  top: 20px;
+  left: -50px;
+  right: -50px;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(139, 69, 19, 0.3) 10%, 
+    rgba(139, 69, 19, 0.3) 90%, 
+    transparent
+  );
+}
+
+/* Лампочки */
+.light-bulb {
+  position: absolute;
+  top: 20px;
+  width: 12px;
+  height: 16px;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  animation: lightsGlow 2s ease-in-out infinite, lightsSwing 3s ease-in-out infinite;
+}
+
+.light-bulb::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 6px;
+  background: #8B4513;
+  border-radius: 2px;
+}
+
+.light-bulb::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 6px solid currentColor;
+  opacity: 0.3;
+}
+
+/* Кольори лампочок */
+.light-red {
+  background: #ff3333;
+  color: #ff3333;
+  animation-delay: 0s;
+}
+
+.light-yellow {
+  background: #ffdd33;
+  color: #ffdd33;
+  animation-delay: 0.3s;
+}
+
+.light-blue {
+  background: #3399ff;
+  color: #3399ff;
+  animation-delay: 0.6s;
+}
+
+.light-green {
+  background: #33ff99;
+  color: #33ff99;
+  animation-delay: 0.9s;
+}
+
+.light-purple {
+  background: #cc66ff;
+  color: #cc66ff;
+  animation-delay: 1.2s;
+}
+
+.light-pink {
+  background: #ff66cc;
+  color: #ff66cc;
+  animation-delay: 1.5s;
+}
+
+/* ========== СНІГ НА КОНТЕЙНЕРАХ ========== */
+.winter-snow-top {
+  position: relative;
+}
+
+.winter-snow-top::before {
+  content: '';
+  position: absolute;
+  top: -25px;
+  left: -10px;
+  right: -10px;
+  height: 35px;
+  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 60" preserveAspectRatio="none"><path d="M0,30 Q50,10 100,30 T200,30 T300,30 T400,30 T500,30 T600,30 T700,30 T800,30 T900,30 T1000,30 T1100,30 T1200,30 L1200,60 L0,60 Z" fill="white" opacity="0.95"/><path d="M0,35 Q60,20 120,35 T240,35 T360,35 T480,35 T600,35 T720,35 T840,35 T960,35 T1080,35 T1200,35 L1200,60 L0,60 Z" fill="white" opacity="0.8"/></svg>') no-repeat;
+  background-size: 100% 100%;
+  pointer-events: none;
+  z-index: 10;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.1));
+}
+
+/* Сніг для gallery */
+.gallery.winter-snow-top::before {
+  top: -20px;
+  height: 30px;
+}
+
+/* Сніг для editor-container */
+.editor-container.winter-snow-top::before {
+  top: -20px;
+  height: 30px;
+}
+
+/* ========== ЗИМОВІ АКЦЕНТИ ДЛЯ ХЕДЕРА ========== */
+header.winter-header {
+  background: linear-gradient(180deg, 
+    rgba(255, 255, 255, 0.98) 0%, 
+    rgba(240, 248, 255, 0.98) 100%
+  ) !important;
+  border-bottom: 2px solid rgba(173, 216, 230, 0.3);
+}
+
+/* ========== ЗИМОВІ КНОПКИ ========== */
+.gradient-animate.winter-glow {
+  box-shadow: 0 0 15px rgba(100, 150, 255, 0.4), 0 0 30px rgba(100, 150, 255, 0.2) !important;
+}
+
+/* ========== FOOTER ЗИМОВИЙ ========== */
+.footer-enhanced.winter-footer::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% - 2px);
+  left: -10px;
+  right: -10px;
+  height: 35px;
+  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 60" preserveAspectRatio="none"><path d="M0,0 L0,30 Q50,10 100,30 T200,30 T300,30 T400,30 T500,30 T600,30 T700,30 T800,30 T900,30 T1000,30 T1100,30 T1200,30 L1200,0 Z" fill="white" opacity="0.9"/></svg>') no-repeat;
+  background-size: 100% 100%;
+  pointer-events: none;
+  transform: rotate(180deg);
+}
+
+/* ========== ІСКРИСТИЙ ЕФЕКТ ========== */
+@keyframes sparkle {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.sparkle {
+  position: fixed;
+  width: 4px;
+  height: 4px;
+  background: white;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: sparkle 2s ease-in-out infinite;
+  box-shadow: 0 0 6px white;
+  z-index: 9998;
+}
+
+/* ========== МОБІЛЬНА АДАПТАЦІЯ ========== */
+@media (max-width: 768px) {
+  .christmas-lights {
+    height: 60px;
+  }
+  
+  .lights-wire {
+    top: 15px;
+  }
+  
+  .light-bulb {
+    top: 15px;
+    width: 10px;
+    height: 14px;
+  }
+  
+  .winter-snow-top::before {
+    top: -15px;
+    height: 25px;
+  }
+  
+  .snowflake {
+    font-size: 0.8em;
+  }
+}
+
+@media (max-width: 480px) {
+  .christmas-lights {
+    height: 50px;
+  }
+  
+  .light-bulb {
+    width: 8px;
+    height: 12px;
+  }
+  
+  .winter-snow-top::before {
+    top: -12px;
+    height: 20px;
+  }
+}
+
+/* ========== ОПТИМІЗАЦІЯ ПРОДУКТИВНОСТІ ========== */
+.snow-container,
+.christmas-lights,
+.sparkle {
+  will-change: transform;
+}
+
+/* Вимкнути анімації при низькій продуктивності */
+@media (prefers-reduced-motion: reduce) {
+  .snowflake,
+  .light-bulb,
+  .sparkle {
+    animation: none !important;
+  }
+}
+
+/* ========== ЗИМОВИЙ КУРСОР (опціонально) ========== */
+body.winter-theme {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><text y="20" font-size="20">❄️</text></svg>'), auto;
+}
+
+/* ========== ХОВЕР ЕФЕКТИ З СНІГОМ ========== */
+.templates a.winter-hover:hover::after {
+  content: '❄️';
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  font-size: 1.5rem;
+  animation: snowFall 2s ease-in-out;
+  pointer-events: none;
+}
+
+/* ========== ЗИМОВИЙ TOAST ========== */
+#toast.winter-toast {
+  background: linear-gradient(135deg, #4a90e2, #7eb8ff);
+  box-shadow: 0 0 20px rgba(74, 144, 226, 0.5);
+}
+
+/* ========== ХОЛОДНИЙ GRADIENT ДЛЯ CANVAS ========== */
+#memeCanvas.winter-canvas {
+  box-shadow: 0 0 30px rgba(100, 150, 255, 0.3), 0 8px 20px rgba(0, 0, 0, 0.2) !important;
+}

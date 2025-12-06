@@ -1,6 +1,8 @@
+// ========== PHAROS MEME LAB - OPTIMIZED VERSION ==========
+
 // CANVAS SETUP
 const canvas = document.getElementById('memeCanvas');
-const ctx = canvas.getContext('2d');
+const ctx = canvas.getContext('2d', { alpha: false }); // Performance boost
 
 let img = new Image();
 let texts = [];
@@ -8,7 +10,40 @@ let currentText = null;
 let isDragging = false;
 let offsetX, offsetY;
 
-// LOAD IMAGE FROM URL
+// PERFORMANCE OPTIMIZATION FLAGS
+let renderScheduled = false;
+let canvasScale = { x: 1, y: 1 };
+
+// ========== UTILITY FUNCTIONS ==========
+
+// Optimized render scheduling with RAF
+function scheduleRender() {
+  if (!renderScheduled) {
+    renderScheduled = true;
+    requestAnimationFrame(() => {
+      renderCanvas();
+      renderScheduled = false;
+    });
+  }
+}
+
+// Get accurate canvas coordinates with scaling
+function getCanvasCoordinates(clientX, clientY) {
+  const rect = canvas.getBoundingClientRect();
+  return {
+    x: (clientX - rect.left) * canvasScale.x,
+    y: (clientY - rect.top) * canvasScale.y
+  };
+}
+
+// Update canvas scale ratio
+function updateCanvasScale() {
+  const rect = canvas.getBoundingClientRect();
+  canvasScale.x = canvas.width / rect.width;
+  canvasScale.y = canvas.height / rect.height;
+}
+
+// ========== IMAGE LOADING ==========
 const params = new URLSearchParams(window.location.search);
 const imgSrc = params.get('img');
 
@@ -27,7 +62,9 @@ if (imgSrc === "custom") {
 }
 
 img.onload = () => {
-  const maxSize = 800;
+  const containerWidth = canvas.parentElement?.clientWidth || 600;
+  const maxSize = Math.min(800, containerWidth - 40);
+  
   let width = img.naturalWidth;
   let height = img.naturalHeight;
 
@@ -43,6 +80,12 @@ img.onload = () => {
 
   canvas.width = width;
   canvas.height = height;
+  
+  // Set CSS size to match canvas size for proper coordinate mapping
+  canvas.style.width = width + 'px';
+  canvas.style.height = height + 'px';
+  
+  updateCanvasScale();
   renderCanvas();
 };
 
@@ -55,21 +98,28 @@ function showPlaceholder() {
   ctx.font = "24px Arial";
   ctx.textAlign = "center";
   ctx.fillText("Choose template on home page", canvas.width / 2, canvas.height / 2);
+  updateCanvasScale();
 }
 
-// RENDER CANVAS
+// ========== OPTIMIZED RENDER ==========
 function renderCanvas() {
+  // Clear and redraw image
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
   if (img.complete && img.naturalWidth > 0) {
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
   }
 
+  // Render all texts
   texts.forEach(t => {
     ctx.save();
+    
+    // Apply rotation transform
     ctx.translate(t.x, t.y);
     ctx.rotate((t.rotation * Math.PI) / 180);
     ctx.translate(-t.x, -t.y);
 
+    // Build font style
     let fontStyle = '';
     if (t.bold) fontStyle += 'bold ';
     if (t.italic) fontStyle += 'italic ';
@@ -82,12 +132,21 @@ function renderCanvas() {
     const totalHeight = lines.length * lineHeight;
     const padding = t.fontSize * 0.3;
 
+    // Apply shadow once if enabled
+    if (t.shadow) {
+      ctx.shadowColor = 'rgba(0,0,0,0.8)';
+      ctx.shadowBlur = 8;
+      ctx.shadowOffsetX = 4;
+      ctx.shadowOffsetY = 4;
+    }
+
     lines.forEach((line, i) => {
       const textWidth = ctx.measureText(line).width;
       const lineY = t.y - totalHeight / 2 + i * lineHeight + lineHeight / 2;
 
       // Background
       if (t.backgroundEnabled) {
+        ctx.shadowColor = 'transparent'; // Disable shadow for background
         ctx.fillStyle = t.backgroundColor;
         ctx.fillRect(
           t.x - textWidth / 2 - padding,
@@ -95,6 +154,10 @@ function renderCanvas() {
           textWidth + padding * 2,
           lineHeight
         );
+        // Re-enable shadow for text
+        if (t.shadow) {
+          ctx.shadowColor = 'rgba(0,0,0,0.8)';
+        }
       }
 
       // Stroke
@@ -105,26 +168,18 @@ function renderCanvas() {
         ctx.strokeText(line, t.x, lineY);
       }
 
-      // Shadow
-      if (t.shadow) {
-        ctx.shadowColor = 'rgba(0,0,0,0.8)';
-        ctx.shadowBlur = 8;
-        ctx.shadowOffsetX = 4;
-        ctx.shadowOffsetY = 4;
-      } else {
-        ctx.shadowColor = 'transparent';
-      }
-
       // Text
       ctx.fillStyle = t.textColor;
       ctx.fillText(line, t.x, lineY);
     });
 
+    // Reset shadow
+    ctx.shadowColor = 'transparent';
     ctx.restore();
   });
 }
 
-// ADD NEW TEXT
+// ========== TEXT MANAGEMENT ==========
 document.getElementById('addTextBtn').addEventListener('click', () => {
   const newText = {
     text: 'NEW TEXT',
@@ -147,10 +202,10 @@ document.getElementById('addTextBtn').addEventListener('click', () => {
   currentText = newText;
   updateTextsList();
   syncControls(currentText);
-  renderCanvas();
+  scheduleRender();
 });
 
-// UPDATE TEXTS LIST
+// ========== OPTIMIZED TEXT LIST UPDATE ==========
 function updateTextsList() {
   const textsList = document.getElementById('textsList');
   textsList.innerHTML = '';
@@ -161,7 +216,7 @@ function updateTextsList() {
     return;
   }
 
-  texts.forEach((t, i) => {
+  texts.forEach((t) => {
     const item = document.createElement('div');
     item.className = 'text-item';
     if (t === currentText) item.classList.add('active');
@@ -170,13 +225,21 @@ function updateTextsList() {
       currentText = t;
       updateTextsList();
       syncControls(currentText);
-      renderCanvas();
+      scheduleRender();
     };
     textsList.appendChild(item);
   });
 }
 
-// SYNC CONTROLS
+// Update only preview text without full re-render
+function updateTextPreview(text) {
+  const activeItem = document.querySelector('.text-item.active .text-preview');
+  if (activeItem && text) {
+    activeItem.textContent = text.slice(0, 30) || "(empty text)";
+  }
+}
+
+// ========== SYNC CONTROLS ==========
 function syncControls(t) {
   if (!t) {
     document.getElementById('editPanel').style.display = 'none';
@@ -200,97 +263,105 @@ function syncControls(t) {
   document.getElementById('textRotation').value = t.rotation;
   document.getElementById('rotationValue').textContent = `${t.rotation}°`;
 
-  // Ensure range input track fills reflect the synced values
+  // Update range backgrounds
   document.querySelectorAll('input[type="range"]').forEach(updateRangeBackground);
 }
 
-// EDIT CONTROLS LISTENERS
+// ========== OPTIMIZED EVENT LISTENERS ==========
+
+// Text input with debouncing
+let textInputTimeout;
 document.getElementById('textInput').addEventListener('input', (e) => {
   if (!currentText) return;
   currentText.text = e.target.value;
-  updateTextsList();
-  renderCanvas();
+  updateTextPreview(e.target.value);
+  
+  clearTimeout(textInputTimeout);
+  textInputTimeout = setTimeout(() => scheduleRender(), 100);
 });
 
-document.getElementById('fontFamily').addEventListener('input', (e) => {
+// Immediate updates for selects
+document.getElementById('fontFamily').addEventListener('change', (e) => {
   if (!currentText) return;
   currentText.fontFamily = e.target.value;
-  renderCanvas();
+  scheduleRender();
 });
 
+// Range sliders with RAF optimization
 document.getElementById('fontSize').addEventListener('input', (e) => {
   if (!currentText) return;
   currentText.fontSize = parseInt(e.target.value);
   document.getElementById('fontSizeValue').textContent = currentText.fontSize;
-  renderCanvas();
+  scheduleRender();
 });
 
 document.getElementById('textColor').addEventListener('input', (e) => {
   if (!currentText) return;
   currentText.textColor = e.target.value;
-  renderCanvas();
+  scheduleRender();
 });
 
 document.getElementById('strokeColor').addEventListener('input', (e) => {
   if (!currentText) return;
   currentText.strokeColor = e.target.value;
-  renderCanvas();
+  scheduleRender();
 });
 
 document.getElementById('strokeWidth').addEventListener('input', (e) => {
   if (!currentText) return;
   currentText.strokeWidth = parseInt(e.target.value);
   document.getElementById('strokeWidthValue').textContent = currentText.strokeWidth;
-  renderCanvas();
+  scheduleRender();
 });
 
 document.getElementById('textBgColor').addEventListener('input', (e) => {
   if (!currentText) return;
   currentText.backgroundColor = e.target.value;
-  renderCanvas();
+  scheduleRender();
 });
 
 document.getElementById('textRotation').addEventListener('input', (e) => {
   if (!currentText) return;
   currentText.rotation = parseInt(e.target.value);
   document.getElementById('rotationValue').textContent = `${currentText.rotation}°`;
-  renderCanvas();
+  scheduleRender();
 });
 
+// Checkboxes - immediate render
 document.getElementById('textShadow').addEventListener('change', (e) => {
   if (!currentText) return;
   currentText.shadow = e.target.checked;
-  renderCanvas();
+  scheduleRender();
 });
 
 document.getElementById('textBold').addEventListener('change', (e) => {
   if (!currentText) return;
   currentText.bold = e.target.checked;
-  renderCanvas();
+  scheduleRender();
 });
 
 document.getElementById('textItalic').addEventListener('change', (e) => {
   if (!currentText) return;
   currentText.italic = e.target.checked;
-  renderCanvas();
+  scheduleRender();
 });
 
 document.getElementById('textBgEnable').addEventListener('change', (e) => {
   if (!currentText) return;
   currentText.backgroundEnabled = e.target.checked;
-  renderCanvas();
+  scheduleRender();
 });
 
-// DELETE TEXT
+// ========== DELETE TEXT ==========
 document.getElementById('deleteTextBtn').addEventListener('click', () => {
   if (!currentText) return;
   const index = texts.indexOf(currentText);
   if (index > -1) {
     texts.splice(index, 1);
-    currentText = null;
+    currentText = texts.length > 0 ? texts[texts.length - 1] : null;
     updateTextsList();
-    syncControls(null);
-    renderCanvas();
+    syncControls(currentText);
+    scheduleRender();
     showToast('Text deleted');
   }
 });
@@ -308,17 +379,17 @@ function showToast(message) {
   }
 }
 
-// MOUSE DRAG (DESKTOP)
-canvas.addEventListener('mousedown', (e) => {
-  const rect = canvas.getBoundingClientRect();
-  const mouseX = e.clientX - rect.left;
-  const mouseY = e.clientY - rect.top;
+// ========== OPTIMIZED DRAG & DROP ==========
 
-  currentText = getTextAtPos(mouseX, mouseY);
+// Mouse events (desktop)
+canvas.addEventListener('mousedown', (e) => {
+  const coords = getCanvasCoordinates(e.clientX, e.clientY);
+  currentText = getTextAtPos(coords.x, coords.y);
+  
   if (currentText) {
     isDragging = true;
-    offsetX = mouseX - currentText.x;
-    offsetY = mouseY - currentText.y;
+    offsetX = coords.x - currentText.x;
+    offsetY = coords.y - currentText.y;
     canvas.style.cursor = 'grabbing';
     updateTextsList();
     syncControls(currentText);
@@ -327,10 +398,10 @@ canvas.addEventListener('mousedown', (e) => {
 
 canvas.addEventListener('mousemove', (e) => {
   if (!isDragging || !currentText) return;
-  const rect = canvas.getBoundingClientRect();
-  currentText.x = e.clientX - rect.left - offsetX;
-  currentText.y = e.clientY - rect.top - offsetY;
-  renderCanvas();
+  const coords = getCanvasCoordinates(e.clientX, e.clientY);
+  currentText.x = coords.x - offsetX;
+  currentText.y = coords.y - offsetY;
+  scheduleRender();
 });
 
 canvas.addEventListener('mouseup', () => {
@@ -339,22 +410,22 @@ canvas.addEventListener('mouseup', () => {
 });
 
 canvas.addEventListener('mouseleave', () => {
-  isDragging = false;
-  canvas.style.cursor = 'grab';
+  if (isDragging) {
+    isDragging = false;
+    canvas.style.cursor = 'grab';
+  }
 });
 
-// TOUCH DRAG (MOBILE)
+// Touch events (mobile)
 canvas.addEventListener('touchstart', (e) => {
   const touch = e.touches[0];
-  const rect = canvas.getBoundingClientRect();
-  const touchX = touch.clientX - rect.left;
-  const touchY = touch.clientY - rect.top;
-
-  currentText = getTextAtPos(touchX, touchY);
+  const coords = getCanvasCoordinates(touch.clientX, touch.clientY);
+  currentText = getTextAtPos(coords.x, coords.y);
+  
   if (currentText) {
     isDragging = true;
-    offsetX = touchX - currentText.x;
-    offsetY = touchY - currentText.y;
+    offsetX = coords.x - currentText.x;
+    offsetY = coords.y - currentText.y;
     updateTextsList();
     syncControls(currentText);
   }
@@ -364,22 +435,31 @@ canvas.addEventListener('touchmove', (e) => {
   if (!isDragging || !currentText) return;
   e.preventDefault();
   const touch = e.touches[0];
-  const rect = canvas.getBoundingClientRect();
-  currentText.x = touch.clientX - rect.left - offsetX;
-  currentText.y = touch.clientY - rect.top - offsetY;
-  renderCanvas();
+  const coords = getCanvasCoordinates(touch.clientX, touch.clientY);
+  currentText.x = coords.x - offsetX;
+  currentText.y = coords.y - offsetY;
+  scheduleRender();
 }, { passive: false });
 
 canvas.addEventListener('touchend', () => {
   isDragging = false;
 });
 
-// GET TEXT AT POSITION (WITH ROTATION SUPPORT)
+// ========== OPTIMIZED HIT DETECTION ==========
 function getTextAtPos(x, y) {
+  // Iterate from last (top) to first (bottom)
   for (let i = texts.length - 1; i >= 0; i--) {
     const t = texts[i];
     
-    // Transform mouse coordinates to text local space
+    // Quick AABB check first
+    const approxWidth = ctx.measureText(t.text).width + 20;
+    const approxHeight = t.fontSize * 1.5;
+    
+    if (Math.abs(x - t.x) > approxWidth || Math.abs(y - t.y) > approxHeight) {
+      continue; // Skip expensive calculations
+    }
+    
+    // Detailed check with rotation
     const angle = (t.rotation * Math.PI) / 180;
     const cos = Math.cos(-angle);
     const sin = Math.sin(-angle);
@@ -388,7 +468,7 @@ function getTextAtPos(x, y) {
     const localX = t.x + (dx * cos - dy * sin);
     const localY = t.y + (dx * sin + dy * cos);
 
-    ctx.font = `${t.fontSize}px ${t.fontFamily}`;
+    ctx.font = `${t.bold ? 'bold ' : ''}${t.italic ? 'italic ' : ''}${t.fontSize}px ${t.fontFamily}`;
     const lines = t.text.split('\n');
     const lineHeight = t.fontSize * 1.2;
     const totalHeight = lines.length * lineHeight;
@@ -411,7 +491,7 @@ function getTextAtPos(x, y) {
   return null;
 }
 
-// DOWNLOAD MEME
+// ========== DOWNLOAD & SHARE ==========
 document.getElementById('downloadBtn').addEventListener('click', () => {
   const link = document.createElement('a');
   link.download = `pharos-meme-${Date.now()}.png`;
@@ -419,7 +499,6 @@ document.getElementById('downloadBtn').addEventListener('click', () => {
   link.click();
 });
 
-// SHARE TO X (TWITTER)
 document.getElementById('shareBtn').addEventListener('click', () => {
   canvas.toBlob(async (blob) => {
     const twitterText = encodeURIComponent('Created with Pharos Meme Lab! 🎨');
@@ -436,8 +515,7 @@ document.getElementById('shareBtn').addEventListener('click', () => {
   });
 });
 
-// SLIDER GRADIENT UPDATE
-// Helper to update a range input's filled track
+// ========== RANGE SLIDER STYLING ==========
 function updateRangeBackground(slider) {
   if (!slider) return;
   const min = parseFloat(slider.min) || 0;
@@ -446,37 +524,80 @@ function updateRangeBackground(slider) {
   slider.style.background = `linear-gradient(90deg, #0007B6 ${val}%, #e5e7eb ${val}%)`;
 }
 
-// Initialize all range inputs and attach listeners
 document.querySelectorAll('input[type="range"]').forEach(slider => {
   updateRangeBackground(slider);
   slider.addEventListener('input', () => updateRangeBackground(slider));
 });
 
-// INITIAL CURSOR
+// ========== INITIAL SETUP ==========
 canvas.style.cursor = 'grab';
 
-// МОБІЛЬНА ПАНЕЛЬ КЕРУВАННЯ — ВАЖЛИВО!
+// Update scale on window resize
+let resizeTimeout;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimeout);
+  resizeTimeout = setTimeout(() => {
+    updateCanvasScale();
+  }, 250);
+});
+
+// ========== MOBILE CONTROLS (OPTIMIZED) ==========
+let mobileControlsInitialized = false;
+
 document.addEventListener('DOMContentLoaded', () => {
+  if (mobileControlsInitialized) return;
+  mobileControlsInitialized = true;
+  
   if (window.innerWidth <= 1024) {
     const toggleBtn = document.getElementById('mobileControlsToggle');
     const panel = document.getElementById('mobileControls');
     const closeBtn = document.getElementById('closeMobileControls');
 
     if (toggleBtn && panel && closeBtn) {
-      toggleBtn.addEventListener('click', () => panel.classList.add('open'));
-      closeBtn.addEventListener('click', () => panel.classList.remove('open'));
+      toggleBtn.addEventListener('click', () => {
+        panel.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      });
       
-      // Закриття по кліку поза панеллю
+      closeBtn.addEventListener('click', () => {
+        panel.classList.remove('open');
+        document.body.style.overflow = '';
+      });
+      
+      // Close on backdrop click
       panel.addEventListener('click', (e) => {
-        if (e.target === panel) panel.classList.remove('open');
+        if (e.target === panel) {
+          panel.classList.remove('open');
+          document.body.style.overflow = '';
+        }
       });
 
-      // (опціонально) Закриття по свайпу вниз
+      // Swipe down to close
       let startY = 0;
-      panel.addEventListener('touchstart', (e) => startY = e.touches[0].clientY);
+      panel.addEventListener('touchstart', (e) => {
+        startY = e.touches[0].clientY;
+      }, { passive: true });
+      
       panel.addEventListener('touchmove', (e) => {
-        if (e.touches[0].clientY - startY > 80) panel.classList.remove('open');
-      });
+        const currentY = e.touches[0].clientY;
+        const diff = currentY - startY;
+        
+        if (diff > 100 && panel.scrollTop === 0) {
+          panel.classList.remove('open');
+          document.body.style.overflow = '';
+        }
+      }, { passive: true });
     }
   }
 });
+
+// ========== DEBUG MODE (Optional) ==========
+if (window.location.search.includes('debug=true')) {
+  console.log('🐛 Debug mode enabled');
+  window.debugCanvas = {
+    texts: () => texts,
+    currentText: () => currentText,
+    canvasScale: () => canvasScale,
+    forceRender: () => renderCanvas()
+  };
+}
